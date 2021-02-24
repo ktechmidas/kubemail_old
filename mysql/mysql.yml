@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql
+  namespace: default
+  labels:
+    k8s-app: mail-mysql
+spec:
+  selector:
+    matchLabels:
+      k8s-app: mail-mysql
+  template:
+    metadata:
+      labels:
+        k8s-app: mail-mysql
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/os
+                operator: Exists
+      nodeSelector:
+        kubernetes.io/os: "linux"
+      dnsPolicy: ClusterFirstWithHostNet
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 60
+      containers:
+      - name: mysql
+        image: mysql:latest #will change later, for now you'll need to build it from the mysql folder with docker built . -t mysql
+        imagePullPolicy: Always
+        ports: 
+          - name: mysql
+            containerPort: 3306
+            hostPort: 3306
+            protocol: TCP
+      imagePullSecrets:
+      - name: regcred
