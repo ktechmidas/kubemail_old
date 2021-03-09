@@ -1,18 +1,18 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: mysql
+  name: roundcube
   namespace: default
   labels:
-    k8s-app: mail-mysql
+    app: roundcube
 spec:
   selector:
     matchLabels:
-      k8s-app: mail-mysql
+      app: roundcube
   template:
     metadata:
       labels:
-        k8s-app: mail-mysql
+        app: roundcube
     spec:
       affinity:
         nodeAffinity:
@@ -25,15 +25,19 @@ spec:
         kubernetes.io/os: "linux"
       dnsPolicy: ClusterFirstWithHostNet
       restartPolicy: Always
-      terminationGracePeriodSeconds: 60
+      terminationGracePeriodSeconds: 15
       containers:
-      - name: mysql
-        image: mysql:latest #will change later, for now you'll need to build it from the mysql folder with docker built . -t mysql
+      - name: roundcube
+        image: roundcube/roundcubemail #will change later, for now you'll need to build it from the roundcube folder with docker built . -t roundcube
+        env:
+        - name: ROUNDCUBEMAIL_DEFAULT_HOST
+          value: "ssl://mail.ktechmidas.net"
+        - name: ROUNDCUBEMAIL_SMTP_SERVER
+          value: "tls://postfix-sub"
+        - name: ROUNDCUBEMAIL_DEFAULT_PORT
+          value: "993"
         imagePullPolicy: Always
         ports: 
-          - name: mysql
-            containerPort: 3306
-            hostPort: 3306
+          - name: web
+            containerPort: 80
             protocol: TCP
-      imagePullSecrets:
-      - name: regcred
